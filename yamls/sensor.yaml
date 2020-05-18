@@ -1,0 +1,94 @@
+# Roomba Sensors #
+
+  # Roomba via Rest980 Docker Image
+  - platform: rest
+    name: rest980
+    json_attributes:
+      - batPct
+      - bin
+      - cleanMissionStatus
+      - dock
+      - signal
+      - bbmssn
+      - bbrun
+      - name
+    resource: !secret vacuum_state
+    value_template: 'OK'
+    scan_interval: 10
+  - platform: template
+    sensors:
+      vacuum:
+        friendly_name_template: >-
+          {{ state_attr('sensor.rest980', 'name') }}
+        value_template: >-
+          {% if state_attr('sensor.rest980', 'cleanMissionStatus')['cycle'] == 'none' and state_attr('sensor.rest980', 'cleanMissionStatus')['notReady'] == 39 %}
+              Pending
+          {% else %}
+          {% set mapper =  {
+            'clean' : 'Clean',
+            'quick' : 'Clean',
+            'spot' : 'Spot',
+            'evac' : 'Empty',
+            'dock' : 'Dock',
+            'train' : 'Train',
+            'none' : 'Ready' } %}
+          {% set state =  state_attr('sensor.rest980', 'cleanMissionStatus')['cycle'] %}
+          {{ mapper[state] if state in mapper else state }}
+          {% endif %}
+        icon_template: mdi:robot-vacuum
+        attribute_templates:
+          battery: >-
+            {{ state_attr('sensor.rest980', 'batPct') }} %
+          phase: >-
+            {% if state_attr('sensor.rest980', 'cleanMissionStatus')['phase'] == 'charge' and state_attr('sensor.rest980', 'batPct') == 100 %}
+              Idle
+            {% elif state_attr('sensor.rest980', 'cleanMissionStatus')['cycle'] == 'none' and state_attr('sensor.rest980', 'cleanMissionStatus')['phase'] == 'stop' %}
+              Stopped
+            {% else %}
+            {% set mapper =  {
+              'charge' : 'Charge',
+              'run' : 'Run',
+              'evac' : 'Empty',
+              'stop' : 'Paused',
+              'stuck' : 'Stuck',
+              'hmUsrDock' : 'Sent Home',
+              'hmMidMsn' : 'Mid Dock',
+              'hmPostMsn' : 'Final Dock' } %}
+            {% set state =  state_attr('sensor.rest980', 'cleanMissionStatus')['phase'] %}
+            {{ mapper[state] if state in mapper else state }}
+            {% endif %}
+          bin: >-
+            {% set mapper =  {
+              true : 'Plný',
+              false : 'Prázdný' } %}
+            {% set state =  state_attr('sensor.rest980', 'bin')['full'] %}
+            {{ mapper[state] if state in mapper else state }}
+          bin_present: >-
+            {% set mapper =  {
+              true : 'Yes',
+              false : 'No' } %}
+            {% set state =  state_attr('sensor.rest980', 'bin')['present'] %}
+            {{ mapper[state] if state in mapper else state }}
+          rssi: >-
+            {{ state_attr('sensor.rest980', 'signal')['rssi'] }}
+          total_time: >-
+            {{ state_attr('sensor.rest980', 'bbrun')['hr'] }}h {{ state_attr('sensor.rest980', 'bbrun')['min'] }}m
+          total_jobs: >-
+            {{ state_attr('sensor.rest980', 'bbmssn')['nMssn'] }}
+          dirt_events: >-
+            {{ state_attr('sensor.rest980', 'bbrun')['nScrubs'] }}
+          job_initiator: >-
+            {% set mapper =  {
+              'schedule' : 'Plan',
+              'rmtApp' : 'App',
+              'manual' : 'Robot',
+              'localApp' : 'HA' } %}
+            {% set state =  state_attr('sensor.rest980', 'cleanMissionStatus')['initiator'] %}
+            {{ mapper[state] if state in mapper else state }}
+          job_time: >-
+            {% set time = state_attr('sensor.rest980', 'cleanMissionStatus')['mssnM'] | int %}
+            {% if time > 60 %}
+              {{ time // 60 }}h {{ '{:0>2d}'.format(time%60) }}m
+            {% else %}
+              {{time}}m
+            {% endif %}

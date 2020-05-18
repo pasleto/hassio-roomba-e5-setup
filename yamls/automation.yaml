@@ -1,0 +1,27 @@
+# Roomba Automations #
+
+  # Update Vacuum REST Sensor for Location Details
+  - alias: Vacuum Update Location
+    initial_state: true
+    trigger:
+      - platform: time_pattern
+        seconds: /2
+      - platform: event
+        event_type: call_service
+        event_data:
+          domain: rest_command
+          service: vacuum_action
+    condition: 
+      condition: or
+      conditions:
+        - condition: template
+          value_template: "{{ is_state_attr('sensor.vacuum', 'phase', 'Run') }}"
+        - condition: template
+          value_template: "{{ is_state_attr('sensor.vacuum', 'phase', 'Sent Home') }}"
+        - condition: template
+          value_template: "{{ is_state_attr('sensor.vacuum', 'phase', 'Mid Dock') }}"
+        - condition: template
+          value_template: "{{ is_state_attr('sensor.vacuum', 'phase', 'Final Dock') }}"
+    action:
+      - service: homeassistant.update_entity
+        entity_id: sensor.rest980

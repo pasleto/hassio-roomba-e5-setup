@@ -1,0 +1,26 @@
+
+  - type: 'custom:lovelace-roomba-e5-card'
+    entity: sensor.vacuum
+    name: 'iRobot Roomba E5'
+    maint: true
+    totals: true
+    job: true
+    defaultTotals: true
+    autoswitch: true
+    labels:
+      battery: 'Baterie'
+      bin: 'Koš'
+      job_time: 'Čas'
+      total_time: 'Čas'
+      mode: 'Mód'
+      total_jobs: 'Úkony'
+      job_initiator: 'Zdroj'
+      dirt_events: 'Špína'
+      total_header: 'Celkem'
+      job_header: 'Úklid'
+      full_clean: 'Spustit úklid'
+      pause_clean: 'Pozastavit'
+      stop_clean: 'Ukončit'
+      resume_clean: 'Pokračovat'
+      dock: 'Domů'
+      bin_missing: 'Vyjmut'

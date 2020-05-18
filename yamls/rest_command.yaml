@@ -1,0 +1,8 @@
+# Roomba Rest Commands
+
+  vacuum_action:
+    url: >-
+      {{ states('input_text.vacuum_action') }}{{ command }}
+    verify_ssl: !secret vacuum_verify_ssl
+    method: 'get'
+    timeout: 20

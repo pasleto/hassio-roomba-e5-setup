@@ -1,0 +1,5 @@
+# Roomba Input Text
+
+  vacuum_action:
+    name: Vacuum Action URL
+    initial: !secret vacuum_action
